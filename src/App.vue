@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from "vue-router";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, reactive, h ,watch} from "vue";
 // Import Element Plus components
 import ElementPlus from 'element-plus'
 import { ElMenu, ElMenuItem, ElSubMenu, ElMenuItemGroup, ElIcon } from 'element-plus'
@@ -17,6 +17,16 @@ import {
   CircleCheck,
   Connection
 } from '@element-plus/icons-vue'
+
+import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  PieChartOutlined,
+  MailOutlined,
+  DesktopOutlined,
+  InboxOutlined,
+  AppstoreOutlined,
+} from '@ant-design/icons-vue';
 
 import { useRouter, useRoute } from 'vue-router'
 
@@ -36,6 +46,7 @@ function toggleSidebar() {
 
 // 处理菜单项点击事件
 function handleMenuClick(path: string) {
+  console.log('jump to ' + path)
   router.push(path)
 }
 
@@ -49,6 +60,75 @@ const menuItems = [
   { id: '6', icon: Setting, title: '系统设置', path: '/settings' }
 ]
 
+const items = reactive(
+  [
+    {
+      key: '1',
+      icon: () => h(PieChartOutlined),
+      label: '首页',
+      title: '首页',
+      path: '/',
+      onClick: function() { handleMenuClick('/') }
+    },
+    {
+      key: '2',
+      icon: () => h(MailOutlined),
+      label: '规则管理',
+      path: '/rules',
+      onClick: function() { handleMenuClick('/rules') }
+    },
+    {
+      key: '3',
+      icon: () => h(MailOutlined),
+      label: '规则测试',
+      path: '/test',
+      onClick: function() { handleMenuClick('/test') }
+    },
+    {
+      key: '4',
+      icon: () => h(MailOutlined),
+      label: '统计分析',
+      path: '/stats',
+      onClick: function() { handleMenuClick('/stats') }
+    },
+    {
+      key: '5',
+      icon: () => h(MailOutlined),
+      label: '数据连接',
+      path: '/connections',
+      onClick: function() { handleMenuClick('/connections') }
+    },
+    {
+      key: '6',
+      icon: () => h(MailOutlined),
+      label: '系统设置',
+      path: '/settings',
+      onClick: function() { handleMenuClick('/settings') },
+      children: [
+        {
+          key: '6-1',
+          label: '用户管理',
+          path: '/settings/users',
+          onClick: function() { handleMenuClick('/settings/users') }
+        },
+        {
+          key: '6-2',
+          label: '角色管理',
+          path: '/settings/roles',
+          onClick: function() { handleMenuClick('/settings/roles') }
+        }
+      ]
+    }
+  ]
+)
+
+const state = reactive({
+  collapsed: false,
+  selectedKeys: ['1'],
+  openKeys: ['1'],
+  preOpenKeys: ['2'],
+});
+
 // 根据当前路由路径设置激活的菜单项
 onMounted(() => {
   const currentPath = route.path
@@ -57,11 +137,21 @@ onMounted(() => {
     activeIndex.value = menuItem.id
   }
 })
+watch(
+  () => state.openKeys,
+  (_val, oldVal) => {
+    state.preOpenKeys = oldVal;
+  },
+);
+const toggleCollapsed = () => {
+  state.collapsed = !state.collapsed;
+  state.openKeys = state.collapsed ? [] : state.preOpenKeys;
+};
 </script>
 
 <template>
-    <!-- Sidebar -->
-    <div class="sidebar" :class="{ 'is-collapsed': isCollapsed }">
+  <!-- Sidebar -->
+  <!-- <div class="sidebar" :class="{ 'is-collapsed': isCollapsed }">
       <div class="sidebar-header">
         <img alt="Vue logo" class="logo" src="@/assets/logo.svg" />
         <h2 v-if="!isCollapsed">规则引擎</h2>
@@ -86,23 +176,39 @@ onMounted(() => {
           @click="handleMenuClick(item.path)">
           <ElIcon><component :is="item.icon" /></ElIcon>
           <template #title>{{ item.title }}</template>
-        </ElMenuItem>
-      </ElMenu>
-    </div> 
-    
-    <!-- Main Content -->
-    <div class="main-content">
-      <header class="main-header">
-        <h1>规则引擎管理系统</h1>
-        <div class="user-info">
-          <span>管理员</span>
-        </div>
-      </header>
-      
-      <div class="content-wrapper">
-        <RouterView />
+</ElMenuItem>
+</ElMenu>
+</div> -->
+
+  <div class="sidebar">
+    <a-button type="primary" @click="toggleCollapsed">
+      <MenuUnfoldOutlined v-if="state.collapsed" />
+      <MenuFoldOutlined v-else />
+    </a-button>
+
+    <a-menu v-model:openKeys="state.openKeys"
+      v-model:selectedKeys="state.selectedKeys"
+      mode="inline"
+      theme="dark"
+      :inline-collapsed="state.collapsed"
+      :items="items">
+
+    </a-menu>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <header class="main-header">
+      <h1>规则引擎管理系统</h1>
+      <div class="user-info">
+        <span>管理员</span>
       </div>
+    </header>
+
+    <div class="content-wrapper">
+      <RouterView />
     </div>
+  </div>
 </template>
 
 <style>
@@ -113,7 +219,8 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-body, html {
+body,
+html {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -145,8 +252,8 @@ body {
   /* margin: 0; */
   /* padding: 0; */
   /* position: relative; */
-  background-color: red; 
-  
+  background-color: red;
+
 }
 
 .sidebar {
@@ -165,7 +272,7 @@ body {
 }
 
 /* 当侧边栏完全展开时，调整主内容区域的宽度和位置 */
-.sidebar:not(.is-collapsed) + .main-content {
+.sidebar:not(.is-collapsed)+.main-content {
   width: calc(100% - 260px);
   left: 260px;
   background-color: red;
@@ -286,7 +393,8 @@ body {
   width: 64px;
 }
 
-:deep(.el-menu-item), :deep(.el-submenu__title) {
+:deep(.el-menu-item),
+:deep(.el-submenu__title) {
   height: 50px;
   line-height: 50px;
 }

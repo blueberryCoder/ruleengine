@@ -37,3 +37,5 @@ npm run build
 
 https://cn.vuejs.org/guide/quick-start.html
 http://ruleengine.cn/#/dashboard/analysis
+https://github.com/rule-engine/rule-engine-open
+https://github.com/rule-engine/rule-engine-front-openn

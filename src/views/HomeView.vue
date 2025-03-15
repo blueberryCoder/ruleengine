@@ -32,6 +32,8 @@ import TheWelcome from '../components/TheWelcome.vue'
 </template>
 
 <style scoped>
+
+
 .home-view {
   width: 100%;
   min-width: 100%;
