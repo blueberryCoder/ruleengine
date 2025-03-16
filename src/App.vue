@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from "vue-router";
-import { ref, computed, onMounted, reactive, h ,watch} from "vue";
+import { ref, computed, onMounted, reactive, h, watch } from "vue";
 // Import Element Plus components
 import ElementPlus from 'element-plus'
 import { ElMenu, ElMenuItem, ElSubMenu, ElMenuItemGroup, ElIcon } from 'element-plus'
@@ -68,54 +68,54 @@ const items = reactive(
       label: '首页',
       title: '首页',
       path: '/',
-      onClick: function() { handleMenuClick('/') }
+      onClick: function () { handleMenuClick('/') }
     },
     {
       key: '2',
       icon: () => h(MailOutlined),
       label: '规则管理',
       path: '/rules',
-      onClick: function() { handleMenuClick('/rules') }
+      onClick: function () { handleMenuClick('/rules') }
     },
     {
       key: '3',
       icon: () => h(MailOutlined),
       label: '规则测试',
       path: '/test',
-      onClick: function() { handleMenuClick('/test') }
+      onClick: function () { handleMenuClick('/test') }
     },
     {
       key: '4',
       icon: () => h(MailOutlined),
       label: '统计分析',
       path: '/stats',
-      onClick: function() { handleMenuClick('/stats') }
+      onClick: function () { handleMenuClick('/stats') }
     },
     {
       key: '5',
       icon: () => h(MailOutlined),
       label: '数据连接',
       path: '/connections',
-      onClick: function() { handleMenuClick('/connections') }
+      onClick: function () { handleMenuClick('/connections') }
     },
     {
       key: '6',
       icon: () => h(MailOutlined),
       label: '系统设置',
       path: '/settings',
-      onClick: function() { handleMenuClick('/settings') },
+      onClick: function () { handleMenuClick('/settings') },
       children: [
         {
           key: '6-1',
           label: '用户管理',
           path: '/settings/users',
-          onClick: function() { handleMenuClick('/settings/users') }
+          onClick: function () { handleMenuClick('/settings/users') }
         },
         {
           key: '6-2',
           label: '角色管理',
           path: '/settings/roles',
-          onClick: function() { handleMenuClick('/settings/roles') }
+          onClick: function () { handleMenuClick('/settings/roles') }
         }
       ]
     }
@@ -150,65 +150,44 @@ const toggleCollapsed = () => {
 </script>
 
 <template>
-  <!-- Sidebar -->
-  <!-- <div class="sidebar" :class="{ 'is-collapsed': isCollapsed }">
-      <div class="sidebar-header">
-        <img alt="Vue logo" class="logo" src="@/assets/logo.svg" />
-        <h2 v-if="!isCollapsed">规则引擎</h2>
-      </div>
-      
-      <div class="collapse-button" @click="toggleSidebar">
-        <ElIcon><Menu/></ElIcon>
-      </div>
-      
-      <ElMenu 
-        :default-active="activeIndex"
-        class="sidebar-menu"
-        :collapse="isCollapsed"
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF">
-        
-        <ElMenuItem 
-          v-for="item in menuItems" 
-          :key="item.id" 
-          :index="item.id"
-          @click="handleMenuClick(item.path)">
-          <ElIcon><component :is="item.icon" /></ElIcon>
-          <template #title>{{ item.title }}</template>
-</ElMenuItem>
-</ElMenu>
-</div> -->
-
-  <div class="sidebar">
-    <a-button type="primary" @click="toggleCollapsed">
-      <MenuUnfoldOutlined v-if="state.collapsed" />
-      <MenuFoldOutlined v-else />
-    </a-button>
-
-    <a-menu v-model:openKeys="state.openKeys"
-      v-model:selectedKeys="state.selectedKeys"
-      mode="inline"
-      theme="dark"
-      :inline-collapsed="state.collapsed"
-      :items="items">
-
-    </a-menu>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content">
-    <header class="main-header">
-      <h1>规则引擎管理系统</h1>
-      <div class="user-info">
-        <span>管理员</span>
-      </div>
-    </header>
-
-    <div class="content-wrapper">
-      <RouterView />
+  <a-layout style="height: 100%; width: 100%;">
+    <a-layout-sider 
+    :width="264" 
+    :collapseWidth="80" v-model:collapsed="state.collapsed" >
+    <div class="logo-container">
+      <img src="@/assets/logo.svg" alt="logo" class="logo-image">
+      <h1 v-if="!state.collapsed" class="logo-title">Rule Engine</h1>
     </div>
-  </div>
+      <a-menu v-model:openKeys="state.openKeys" v-model:selectedKeys="state.selectedKeys" mode="inline" theme="dark"
+        :inline-collapsed="state.collapsed" :style="{ width: '100%',height: '100%' }" :items="items">
+      </a-menu>
+    </a-layout-sider>
+    <a-layout>
+      <a-layout-header class="site-layout-header">
+        <div class="header-container">
+          <div class="left-section">
+            <a-button 
+            @click="toggleCollapsed" 
+            class="toggle-button"
+            type="text">
+              <MenuUnfoldOutlined v-if="state.collapsed" />
+              <MenuFoldOutlined v-else />
+            </a-button>
+         </div>
+          <div class="user-info">
+            <span>管理员</span>
+          </div>
+        </div>
+      </a-layout-header>
+      <a-layout-content>
+        <!-- Main Content -->
+        <div class="content-wrapper">
+          <RouterView />
+        </div>
+      </a-layout-content>
+    </a-layout>
+  </a-layout>
+
 </template>
 
 <style>
@@ -245,13 +224,6 @@ body {
 
 <style scoped>
 .app-container {
-  /* display: flex; */
-  /* overflow: hidden; */
-  /* height: 100vh;  */
-  /* width: 100%; */
-  /* margin: 0; */
-  /* padding: 0; */
-  /* position: relative; */
   background-color: red;
 
 }
@@ -259,7 +231,8 @@ body {
 .sidebar {
   display: flex;
   flex-direction: column;
-  width: 260px;
+  width: auto;
+  height: 100%;
   background-color: #304156;
   color: #bfcbd9;
   transition: width 0.3s;
@@ -271,20 +244,22 @@ body {
   z-index: 10;
 }
 
-/* 当侧边栏完全展开时，调整主内容区域的宽度和位置 */
-.sidebar:not(.is-collapsed)+.main-content {
-  width: calc(100% - 260px);
-  left: 260px;
-  background-color: red;
+.toggle-button {
+  align-self: flex-start;
+  margin-left: 16px;
+  margin-top: 16px;
+  margin-bottom: 16px;
 }
 
-.sidebar.is-collapsed {
-  width: 64px;
+.sidebar-menu {
+  /* flex: 1; */
+  width: 100%;
 }
 
 .main-content {
-  width: calc(100% - 64px);
-  left: 64px;
+  flex: 1;
+  width: calc(100% - 264px);
+  /* left: 64px; */
   transition: width 0.3s, left 0.3s;
   position: absolute;
   top: 0;
@@ -397,5 +372,96 @@ body {
 :deep(.el-submenu__title) {
   height: 50px;
   line-height: 50px;
+}
+
+:deep(.ant-layout-content) {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+/* 添加logo容器样式 */
+.logo-container {
+  height: 64px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background-color: #001529;
+  transition: all 0.3s;
+}
+
+.logo-image {
+  height: 32px;
+  width: 32px;
+  margin-right: 16px;
+  margin-left: 16px;
+}
+
+.logo-title {
+  color: white;
+  font-size: 18px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+/* 头部样式 */
+:deep(.ant-layout-header) {
+  background: white;
+  padding: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.site-layout-header {
+  height: 64px;
+  padding: 0;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 0 24px;
+}
+
+.left-section {
+  display: flex;
+  align-items: center;
+}
+
+.site-title {
+  margin: 0 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-button {
+  margin-right: 16px;
+  font-size: 16px;
+}
+
+:deep(.ant-btn.toggle-button) {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 4px 8px;
+}
+
+:deep(.ant-btn.toggle-button:hover) {
+  color: #1890ff;
+  background: transparent;
+}
+
+:deep(.ant-btn.toggle-button:focus) {
+  outline: none;
+  box-shadow: none;
 }
 </style>
