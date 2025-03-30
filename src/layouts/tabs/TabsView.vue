@@ -11,7 +11,7 @@ import {
   AppstoreOutlined,
 } from '@ant-design/icons-vue';
 import TabsHead from './TabsHead.vue'
-
+import { message } from 'ant-design-vue'; // 引入message组件
 import { useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
@@ -31,9 +31,27 @@ function handleMenuClick(path: string) {
   router.push(path)
 }
 
+// 处理标签页点击事件
 function handleTabChange(path: string) {
   console.log('tab change jump to ' + path)
   router.push(path)
+}
+
+function handleTabRemove(path: string) {
+  if (pageList.value.length === 1) {
+    // 使用Ant Design的message组件显示提示
+    message.warning('不能关闭最后一个标签页');
+    return
+  }
+  let index = pageList.value.findIndex(item => item.path === path)
+  if (index !== -1) {
+    pageList.value.splice(index, 1)
+  }
+  if (path === activePage.value) {
+    index = index >= pageList.value.length ? pageList.value.length - 1 : index
+    activePage.value = pageList.value[index].path
+  router.push(activePage.value)
+  }
 }
 
 const items = reactive(
@@ -171,7 +189,8 @@ const toggleCollapsed = () => {
           <TabsHead 
           :pageList="pageList" 
           :activePage="activePage"
-            @tabChange="handleTabChange"></TabsHead>
+            @tabChange="handleTabChange"
+            @tabRemove="handleTabRemove"></TabsHead>
           <RouterView />
         </div>
       </a-layout-content>
