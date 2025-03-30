@@ -4,7 +4,6 @@ import HomeView from '../views/HomeView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
 
-  
   routes: [
     
     {
@@ -17,7 +16,6 @@ const router = createRouter({
       name: 'login',
       component: () => import('../pages/login/Login.vue')
     },
-
     {
       path: '/',
       name: '首页',
@@ -26,32 +24,32 @@ const router = createRouter({
       children: [
         {
           path: 'dashboard',
-          name: 'dashboard',
+          name: '控制台',
           component: HomeView,
         },
         {
           path: '/rules',
-          name: 'rules',
+          name: '规则管理',
           component: () => import('../views/RulesView.vue'),
         },
         {
           path: '/test',
-          name: 'test',
+          name: '规则测试',
           component: () => import('../views/TestView.vue'),
         },
         {
           path: '/stats',
-          name: 'stats',
+          name: '统计分析',
           component: () => import('../views/StatsView.vue'),
         },
         {
           path: '/connections',
-          name: 'connections',
+          name: '数据连接',
           component: () => import('../views/ConnectionsView.vue'),
         },
         {
           path: '/settings',
-          name: 'settings',
+          name: '系统设置',
           component: () => import('../views/SettingsView.vue'),
         },
         {

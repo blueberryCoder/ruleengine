@@ -4,6 +4,7 @@ import TheWelcome from '../components/TheWelcome.vue'
 
 <template>
   <div class="home-view">
+    
     <h1>首页</h1>
     <div class="dashboard-content">
       <p>欢迎使用规则引擎管理系统！</p>

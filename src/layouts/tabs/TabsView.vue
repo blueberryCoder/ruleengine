@@ -10,15 +10,29 @@ import {
   InboxOutlined,
   AppstoreOutlined,
 } from '@ant-design/icons-vue';
+import TabsHead from './TabsHead.vue'
 
-import { useRouter} from 'vue-router'
+import { useRouter } from 'vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
+
+const pageList = ref<{ path: string, title: string }[]>([])
 
 // 获取路由实例
 const router = useRouter()
+console.log(`current router is ${router.currentRoute.value.path}`)
+if (pageList.value.findIndex(item => item.path === router.currentRoute.value.path) == -1) {
+  createPage(router.currentRoute.value)
+}
+const activePage = ref<string>(router.currentRoute.value.path)
 
 // 处理菜单项点击事件
 function handleMenuClick(path: string) {
   console.log('jump to ' + path)
+  router.push(path)
+}
+
+function handleTabChange(path: string) {
+  console.log('tab change jump to ' + path)
   router.push(path)
 }
 
@@ -93,45 +107,59 @@ const state = reactive({
 
 // 根据当前路由路径设置激活的菜单项
 onMounted(() => {
-  
+
 })
+
 watch(
   () => state.openKeys,
   (_val, oldVal) => {
     state.preOpenKeys = oldVal;
   },
 );
+
+watch(() => router.currentRoute.value, (newRouter) => {
+  console.log(`new path is ${JSON.stringify(newRouter.name)}`)
+  if (pageList.value.findIndex(item => item.path === newRouter.path) == -1) {
+    createPage(newRouter)
+  }
+  activePage.value = newRouter.path
+})
+
+function createPage(newRouter: RouteLocationNormalizedLoaded) {
+
+  pageList.value.push({
+    path: newRouter.path,
+    title: String(newRouter.name)
+  })
+}
+
 const toggleCollapsed = () => {
   state.collapsed = !state.collapsed;
   state.openKeys = state.collapsed ? [] : state.preOpenKeys;
 };
+
 </script>
 
 <template>
   <a-layout style="height: 100%; width: 100%;">
-    <a-layout-sider 
-    :width="264" 
-    :collapseWidth="80" v-model:collapsed="state.collapsed" >
-    <div class="logo-container">
-      <img src="@/assets/logo.svg" alt="logo" class="logo-image">
-      <h1 v-if="!state.collapsed" class="logo-title">Rule Engine</h1>
-    </div>
+    <a-layout-sider :width="264" :collapseWidth="80" v-model:collapsed="state.collapsed">
+      <div class="logo-container">
+        <img src="@/assets/logo.svg" alt="logo" class="logo-image">
+        <h1 v-if="!state.collapsed" class="logo-title">Rule Engine</h1>
+      </div>
       <a-menu v-model:openKeys="state.openKeys" v-model:selectedKeys="state.selectedKeys" mode="inline" theme="dark"
-        :inline-collapsed="state.collapsed" :style="{ width: '100%',height: '100%' }" :items="items">
+        :inline-collapsed="state.collapsed" :style="{ width: '100%', height: '100%' }" :items="items">
       </a-menu>
     </a-layout-sider>
     <a-layout>
       <a-layout-header class="site-layout-header">
         <div class="header-container">
           <div class="left-section">
-            <a-button 
-            @click="toggleCollapsed" 
-            class="toggle-button"
-            type="text">
+            <a-button @click="toggleCollapsed" class="toggle-button" type="text">
               <MenuUnfoldOutlined v-if="state.collapsed" />
               <MenuFoldOutlined v-else />
             </a-button>
-         </div>
+          </div>
           <div class="user-info">
             <span>管理员</span>
           </div>
@@ -140,6 +168,10 @@ const toggleCollapsed = () => {
       <a-layout-content>
         <!-- Main Content -->
         <div class="content-wrapper">
+          <TabsHead 
+          :pageList="pageList" 
+          :activePage="activePage"
+            @tabChange="handleTabChange"></TabsHead>
           <RouterView />
         </div>
       </a-layout-content>
