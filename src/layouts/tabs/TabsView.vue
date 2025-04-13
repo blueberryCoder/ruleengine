@@ -14,11 +14,51 @@ import TabsHead from './TabsHead.vue'
 import { message } from 'ant-design-vue'; // 引入message组件
 import { useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-
+import options  from '../../router/config'
 const pageList = ref<{ path: string, title: string }[]>([])
 
 // 获取路由实例
 const router = useRouter()
+
+// parse router config to menu
+function parseRouterConfig(options: any): any[] {
+   
+    const homeRoute = options['routes'].find((route: any) => {
+        return route.path === '/'
+    })
+
+    const menuItem = homeRoute['children'].map((route: any) => {
+        // 顶级路由使用绝对路径
+        const fullPath = route.path.startsWith('/') ? route.path : `/${route.path}`
+        return mapRouterToPage(route, fullPath)
+    })
+    return menuItem;
+}
+
+function mapRouterToPage(route: any, fullPath: string): any {
+  return {
+            key: fullPath,
+            label: route.name,
+            path: fullPath,
+            title: route.name,
+            icon: () => h(PieChartOutlined),
+            onClick: function () { 
+              if (!route.children) {
+              handleMenuClick(fullPath)
+              }
+            },
+            children: route.children?.map((child: any) => {
+                // 子路由路径基于父路由的完整路径
+                const childPath = child.path.startsWith('/') 
+                  ? child.path 
+                  : `${fullPath}/${child.path}`
+                return mapRouterToPage(child, childPath )
+            })
+        }
+}
+
+const menuItem = parseRouterConfig(options)
+
 console.log(`current router is ${router.currentRoute.value.path}`)
 if (pageList.value.findIndex(item => item.path === router.currentRoute.value.path) == -1) {
   createPage(router.currentRoute.value)
@@ -27,7 +67,7 @@ const activePage = ref<string>(router.currentRoute.value.path)
 
 // 处理菜单项点击事件
 function handleMenuClick(path: string) {
-  console.log('jump to ' + path)
+  console.log('menu click jump to ' + path)
   router.push(path)
 }
 
@@ -45,82 +85,26 @@ function handleTabRemove(path: string) {
   }
   let index = pageList.value.findIndex(item => item.path === path)
   if (index !== -1) {
+    // 删除对应的页面
     pageList.value.splice(index, 1)
   }
+  // 如果当前关闭的标签页是当前激活的标签页
   if (path === activePage.value) {
     index = index >= pageList.value.length ? pageList.value.length - 1 : index
     activePage.value = pageList.value[index].path
-  router.push(activePage.value)
+    router.push(activePage.value)
   }
 }
 
 const items = reactive(
-  [
-    {
-      key: '1',
-      icon: () => h(PieChartOutlined),
-      label: '首页',
-      title: '首页',
-      path: '/',
-      onClick: function () { handleMenuClick('/') }
-    },
-    {
-      key: '2',
-      icon: () => h(MailOutlined),
-      label: '规则管理',
-      path: '/rules',
-      onClick: function () { handleMenuClick('/rules') }
-    },
-    {
-      key: '3',
-      icon: () => h(MailOutlined),
-      label: '规则测试',
-      path: '/test',
-      onClick: function () { handleMenuClick('/test') }
-    },
-    {
-      key: '4',
-      icon: () => h(MailOutlined),
-      label: '统计分析',
-      path: '/stats',
-      onClick: function () { handleMenuClick('/stats') }
-    },
-    {
-      key: '5',
-      icon: () => h(MailOutlined),
-      label: '数据连接',
-      path: '/connections',
-      onClick: function () { handleMenuClick('/connections') }
-    },
-    {
-      key: '6',
-      icon: () => h(MailOutlined),
-      label: '系统设置',
-      path: '/settings',
-      onClick: function () { handleMenuClick('/settings') },
-      children: [
-        {
-          key: '6-1',
-          label: '用户管理',
-          path: '/settings/users',
-          onClick: function () { handleMenuClick('/settings/users') }
-        },
-        {
-          key: '6-2',
-          label: '角色管理',
-          path: '/settings/roles',
-          onClick: function () { handleMenuClick('/settings/roles') }
-        }
-      ]
-    }
-  ]
-)
+  menuItem
+);
 
 const state = reactive({
   collapsed: false,
-  selectedKeys: ['1'],
-  openKeys: ['1'],
-  preOpenKeys: ['2'],
+  selectedKeys: [items[0].key],
+  openKeys: [items[0].key],
+  preOpenKeys: [items[0].key],
 });
 
 // 根据当前路由路径设置激活的菜单项
@@ -186,10 +170,7 @@ const toggleCollapsed = () => {
       <a-layout-content>
         <!-- Main Content -->
         <div class="content-wrapper">
-          <TabsHead 
-          :pageList="pageList" 
-          :activePage="activePage"
-            @tabChange="handleTabChange"
+          <TabsHead :pageList="pageList" :activePage="activePage" @tabChange="handleTabChange"
             @tabRemove="handleTabRemove"></TabsHead>
           <RouterView />
         </div>
