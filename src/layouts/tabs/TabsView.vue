@@ -14,56 +14,68 @@ import TabsHead from './TabsHead.vue'
 import { message } from 'ant-design-vue'; // 引入message组件
 import { useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import options  from '../../router/config'
+import options from '../../router/config'
 const pageList = ref<{ path: string, title: string }[]>([])
 
 // 获取路由实例
 const router = useRouter()
+const menuItem = parseRouterConfig(options)
+
+
+const items = reactive(
+  menuItem
+);
+
+const state = reactive({
+  collapsed: false,
+  selectedKeys: [items[0].key],
+  openKeys: [items[0].key],
+  preOpenKeys: [items[0].key],
+});
 
 // parse router config to menu
 function parseRouterConfig(options: any): any[] {
-   
-    const homeRoute = options['routes'].find((route: any) => {
-        return route.path === '/'
-    })
 
-    const menuItem = homeRoute['children'].map((route: any) => {
-        // 顶级路由使用绝对路径
-        const fullPath = route.path.startsWith('/') ? route.path : `/${route.path}`
-        return mapRouterToPage(route, fullPath)
-    })
-    return menuItem;
+  const homeRoute = options['routes'].find((route: any) => {
+    return route.path === '/'
+  })
+
+  const menuItem = homeRoute['children'].map((route: any) => {
+    // 顶级路由使用绝对路径
+    const fullPath = route.path.startsWith('/') ? route.path : `/${route.path}`
+    return mapRouterToPage(route, fullPath)
+  })
+  return menuItem;
 }
 
 function mapRouterToPage(route: any, fullPath: string): any {
   return {
-            key: fullPath,
-            label: route.name,
-            path: fullPath,
-            title: route.name,
-            icon: () => h(PieChartOutlined),
-            onClick: function () { 
-              if (!route.children) {
-              handleMenuClick(fullPath)
-              }
-            },
-            children: route.children?.map((child: any) => {
-                // 子路由路径基于父路由的完整路径
-                const childPath = child.path.startsWith('/') 
-                  ? child.path 
-                  : `${fullPath}/${child.path}`
-                return mapRouterToPage(child, childPath )
-            })
-        }
+    key: fullPath,
+    label: route.name,
+    path: fullPath,
+    title: route.name,
+    icon: () => h(PieChartOutlined),
+    onClick: function () {
+      if (!route.children) {
+        handleMenuClick(fullPath)
+      }
+    },
+    children: route.children?.map((child: any) => {
+      // 子路由路径基于父路由的完整路径
+      const childPath = child.path.startsWith('/')
+        ? child.path
+        : `${fullPath}/${child.path}`
+      return mapRouterToPage(child, childPath)
+    })
+  }
 }
-
-const menuItem = parseRouterConfig(options)
 
 console.log(`current router is ${router.currentRoute.value.path}`)
 if (pageList.value.findIndex(item => item.path === router.currentRoute.value.path) == -1) {
   createPage(router.currentRoute.value)
 }
 const activePage = ref<string>(router.currentRoute.value.path)
+updateMenu()
 
 // 处理菜单项点击事件
 function handleMenuClick(path: string) {
@@ -96,16 +108,7 @@ function handleTabRemove(path: string) {
   }
 }
 
-const items = reactive(
-  menuItem
-);
 
-const state = reactive({
-  collapsed: false,
-  selectedKeys: [items[0].key],
-  openKeys: [items[0].key],
-  preOpenKeys: [items[0].key],
-});
 
 // 根据当前路由路径设置激活的菜单项
 onMounted(() => {
@@ -125,7 +128,18 @@ watch(() => router.currentRoute.value, (newRouter) => {
     createPage(newRouter)
   }
   activePage.value = newRouter.path
+
+  // update menu
+  updateMenu()
 })
+
+function updateMenu() {
+  // find openKeys
+  // state.openKeys = [openKey]
+  // find selectedKeys
+  state.selectedKeys = [activePage.value]
+  console.log(`update menu, openKeys: ${state.openKeys}, selectedKeys: ${state.selectedKeys}`)
+}
 
 function createPage(newRouter: RouteLocationNormalizedLoaded) {
 
